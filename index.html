@@ -80,7 +80,6 @@
             overscroll-behavior-y: contain;
         }
 
-        /* ----- UPDATED TOP BAR (glass pill wrapper) ----- */
         .top-bar {
             position: fixed;
             top: 0;
@@ -89,7 +88,7 @@
             width: 100%;
             max-width: 480px;
             display: flex;
-            justify-content: center;   /* center the pill container */
+            justify-content: center;
             align-items: center;
             padding: 0.8rem 1.2rem;
             z-index: 100;
@@ -97,7 +96,6 @@
             pointer-events: none;
         }
 
-        /* --- PILL CONTAINER: glassmorphic, matches tab selector --- */
         .top-bar-pill {
             display: flex;
             align-items: center;
@@ -114,7 +112,6 @@
             gap: 0.25rem;
         }
 
-        /* FAB buttons — now inside the pill, remove outer shadows */
         .fab-btn {
             width: 44px;
             height: 44px;
@@ -167,7 +164,6 @@
             height: 20px;
         }
 
-        /* Date container — no extra background, sits inside pill */
         .top-date-container {
             display: flex;
             flex-direction: column;
@@ -208,7 +204,6 @@
             white-space: nowrap;
         }
 
-        /* ----- BOTTOM TAB SELECTOR ----- */
         .tab-container {
             position: fixed;
             bottom: 1.5rem;
@@ -247,10 +242,9 @@
             font-weight: 500;
             transform: scale(1.05);
             outline: 1px solid var(--accent-blue);
-            outline-offset: -1px;   /* keep the outline inside the pill */
+            outline-offset: -1px;
         }
 
-        /* ----- REST OF STYLES ----- */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
@@ -682,7 +676,6 @@
 </head>
 <body>
 
-<!-- Top Bar with Date + FABs (floating) — now wrapped in a glass pill -->
 <div class="top-bar">
     <div class="top-bar-pill">
         <button id="fab-add" class="fab-btn" aria-label="Add new goal">
@@ -704,20 +697,17 @@
     </div>
 </div>
 
-<!-- First-run tooltip -->
 <div id="first-run-tooltip" class="tooltip-bubble" style="display: none;">
     Tap here to add your first goal! 🚀
 </div>
 
 <main class="app-container">
-    <!-- Goals Section -->
     <section class="task-section card">
         <h2 id="section-title" class="section-title">Today's to-do list</h2>
         <div id="todo-list" class="todo-list" ondragover="allowDrop(event)"></div>
     </section>
 </main>
 
-<!-- Floating Bottom Tab Navigation (glassmorphic) -->
 <div class="tab-container">
     <button class="tab-btn" data-tab="yearly">Yearly</button>
     <button class="tab-btn" data-tab="monthly">Monthly</button>
@@ -725,7 +715,6 @@
     <button class="tab-btn active" data-tab="today">Today</button>
 </div>
 
-<!-- Add Task Modal -->
 <div id="input-modal" class="modal-overlay">
     <div class="modal-content input-card">
         <h3 class="modal-title">New Goal</h3>
@@ -737,7 +726,6 @@
     </div>
 </div>
 
-<!-- Confirmation Modal -->
 <div id="confirm-modal" class="modal-overlay">
     <div class="modal-content confirm-card">
         <h3 id="confirm-title" class="modal-title">Confirm</h3>
@@ -749,7 +737,6 @@
     </div>
 </div>
 
-<!-- Celebration Modal -->
 <div id="celebration-modal" class="modal-overlay celebration-overlay">
     <div class="modal-content celebration-card">
         <div class="celebration-emoji">🥳</div>
@@ -757,41 +744,34 @@
     </div>
 </div>
 
-<!-- Undo Toast -->
 <div id="undo-toast" class="toast-container">
     <span id="toast-message" class="toast-msg">Task deleted</span>
     <button id="toast-undo-btn" class="toast-undo-btn">Undo</button>
 </div>
 
 <script>
-    // --- ONBOARDING CONTENT (Unicode escapes) ---
     const emptyStateContent = {
-        'today': { text: "You're all caught up! Tap the + button to add a task for today.", icon: "\u{1F3AF}" },    // 🎯
-        'weekly': { text: "No goals for this week yet. Tap the + button to change that!", icon: "\u{1F3C1}" },        // 🏁
-        'monthly': { text: "A fresh month, a blank canvas. Tap the + button to set your focus.", icon: "\u{1F4C6}" }, // 📆
-        'yearly': { text: "Define your yearly milestones here. Tap the + button to start planning. ", icon: "\u{1F3D4}\u{FE0F}" } // 🏔️
+        'today': { text: "You're all caught up! Tap the + button to add a task for today.", icon: "\u{1F3AF}" },
+        'weekly': { text: "No goals for this week yet. Tap the + button to change that!", icon: "\u{1F3C1}" },
+        'monthly': { text: "A fresh month, a blank canvas. Tap the + button to set your focus.", icon: "\u{1F4C6}" },
+        'yearly': { text: "Define your yearly milestones here. Tap the + button to start planning. ", icon: "\u{1F3D4}\u{FE0F}" }
     };
 
-    // --- INDEXEDDB CONSTANTS ---
     const DB_NAME = 'GoalTrackerDB';
     const DB_VERSION = 1;
     const STORE_TASKS = 'tasks_store';
     let dbInstance = null;
 
-    // --- CENTRAL STATE ---
     let state = {
         tasks: []
     };
     let currentTab = 'today';
 
-    // --- UNDO STATE ---
     let lastDeletedTask = null;
     let toastTimeout = null;
 
-    // --- DRAG STATE ---
     let draggedTaskId = null;
 
-    // --- DOM REFS ---
     const todoListContainer = document.getElementById('todo-list');
     const sectionTitle = document.getElementById('section-title');
     const fabAdd = document.getElementById('fab-add');
@@ -822,7 +802,6 @@
     let confirmAction = null;
     let confirmTargetId = null;
 
-    // --- INIT ---
     document.addEventListener('DOMContentLoaded', () => {
         initDatabase().then(() => {
             setupEventListeners();
@@ -840,7 +819,6 @@
         });
     });
 
-    // --- FIRST RUN CHECK ---
     function checkFirstRun() {
         const hasVisited = localStorage.getItem('goalTracker_hasVisited');
         if (!hasVisited && state.tasks.length === 0) {
@@ -853,7 +831,6 @@
         firstRunTooltip.style.display = 'none';
     }
 
-    // --- INDEXEDDB CORE ---
     function initDatabase() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -881,6 +858,12 @@
             const getAll = store.getAll();
             getAll.onsuccess = () => {
                 state.tasks = getAll.result || [];
+                state.tasks.sort((a, b) => {
+                    if (a.category === b.category) {
+                        return (a.sortOrder || 0) - (b.sortOrder || 0);
+                    }
+                    return 0;
+                });
                 resolve();
             };
         });
@@ -908,13 +891,12 @@
         store.delete(id);
     }
 
-    // --- RENDER LOGIC ---
     function updateView() {
         const titles = {
-            'yearly': '\u{1F3D4}\u{FE0F} My Goals for This Year',       // 🏔️
-            'monthly': '\u{1F4C6} My Goals of The Month',                // 📆
-            'weekly': '\u{1F3C1} My Goals for This Week',                // 🏁
-            'today': "\u{1F3AF} Today's to-do list"                       // 🎯
+            'yearly': '\u{1F3D4}\u{FE0F} My Goals for This Year',
+            'monthly': '\u{1F4C6} My Goals of The Month',
+            'weekly': '\u{1F3C1} My Goals for This Week',
+            'today': "\u{1F3AF} Today's to-do list"
         };
         sectionTitle.textContent = titles[currentTab];
         renderTasks();
@@ -956,7 +938,6 @@
         });
     }
 
-    // --- TASK ACTIONS ---
     function toggleTaskCompletion(id) {
         const taskIndex = state.tasks.findIndex(t => t.id === id);
         if (taskIndex === -1) return;
@@ -973,11 +954,14 @@
         const value = taskInput.value.trim();
         if (!value) return;
         
+        const currentCategoryTasks = state.tasks.filter(t => t.category === currentTab);
+        
         const newTask = {
             id: Date.now(),
             text: value,
             completed: false,
-            category: currentTab
+            category: currentTab,
+            sortOrder: currentCategoryTasks.length
         };
         
         state.tasks.push(newTask);
@@ -1030,7 +1014,6 @@
         renderTasks();
     }
 
-    // --- SWIPE TO DELETE ---
     function setupSwipeToDelete(wrapper, id) {
         const item = wrapper.querySelector('.todo-item');
         let startX = 0;
@@ -1059,7 +1042,6 @@
         });
     }
 
-    // --- DRAG AND DROP REORDERING ---
     function setupDragAndDrop(element, id) {
         element.addEventListener('dragstart', (e) => {
             draggedTaskId = id;
@@ -1094,6 +1076,16 @@
 
     function updateTaskOrderFromDOM() {
         const wrappers = todoListContainer.querySelectorAll('.todo-wrapper');
+        
+        wrappers.forEach((wrapper, index) => {
+            const id = Number(wrapper.querySelector('.todo-item').getAttribute('data-id'));
+            const task = state.tasks.find(t => t.id === id);
+            if (task) {
+                task.sortOrder = index;
+                putTaskToDB(task);
+            }
+        });
+
         const newOrderedIds = Array.from(wrappers).map(w => Number(w.querySelector('.todo-item').getAttribute('data-id')));
         
         let filtered = state.tasks.filter(t => t.category === currentTab);
@@ -1106,14 +1098,12 @@
         });
 
         state.tasks = [...others, ...reorderedFiltered];
-        persistTasksToDB(state.tasks);
     }
 
     function allowDrop(e) {
         e.preventDefault();
     }
 
-    // --- CONFIRM MODAL ---
     function showConfirmModal(action, id, message) {
         confirmAction = action;
         confirmTargetId = id;
@@ -1145,7 +1135,6 @@
         closeConfirmModal();
     }
 
-    // --- MODALS (Add Task) ---
     function openModal() {
         inputModal.classList.add('active');
         setTimeout(() => taskInput.focus(), 150);
@@ -1156,7 +1145,6 @@
         taskInput.value = '';
     }
 
-    // --- RIPPLE ON FABS ---
     function createRipple(e) {
         const btn = e.currentTarget;
         const circle = document.createElement('span');
@@ -1174,7 +1162,6 @@
         btn.appendChild(circle);
     }
 
-    // --- CELEBRATION ---
     function triggerCompletionCelebration() {
         if (typeof confetti === 'function') {
             const confLeft = { particleCount: 35, angle: 60, spread: 55, origin: { x: 0, y: 1 } };
@@ -1187,14 +1174,13 @@
         if (activeRemaining > 0) {
             celebrationText.textContent = `Hurray! One down, ${activeRemaining} to go!`;
         } else {
-            celebrationText.textContent = "Amazing! You completed this entire list! \u{1F389}"; // 🎉
+            celebrationText.textContent = "Amazing! You completed this entire list! \u{1F389}";
         }
 
         celebrationModal.classList.add('active');
         setTimeout(() => celebrationModal.classList.remove('active'), 1800);
     }
 
-    // --- DATE ---
     function updateDate() {
         const now = new Date();
         const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
@@ -1230,7 +1216,6 @@
         }, msUntilMidnight);
     }
 
-    // --- INLINE EDIT ---
     function enterEditMode(textElement, id) {
         const task = state.tasks.find(t => t.id === id);
         if (!task || task.completed) return;
@@ -1265,7 +1250,6 @@
         input.addEventListener('blur', saveChanges);
     }
 
-    // --- EVENT LISTENERS ---
     function setupEventListeners() {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1302,7 +1286,6 @@
         });
     }
 
-    // --- SANITIZATION ---
     function escapeHtml(string) {
         return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
