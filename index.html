@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Northstar</title>
+    <meta name="theme-color" content="#0B0F19">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Northstar">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <script src="confetti.js"></script>
     
     <style>
@@ -141,6 +149,87 @@
 
         .fab-btn:active {
             transform: scale(0.94);
+        }
+
+        .fab-btn.fab-menu {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-subtle);
+            box-shadow: none;
+        }
+
+        .fab-btn.tab-fab {
+            width: 52px;
+            height: 52px;
+            align-self: center;
+            margin: -14px 0.2rem 0;
+        }
+
+        .menu-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .menu-layer.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .menu-panel {
+            position: absolute;
+            top: 78px;
+            right: max(1.2rem, calc(50% - 240px + 1.2rem));
+            width: min(250px, calc(100% - 2.4rem));
+            background: rgba(22, 28, 45, 0.92);
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 20px;
+            padding: 0.4rem;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+            transform-origin: top right;
+            transform: translateY(-6px) scale(0.97);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .menu-layer.active .menu-panel {
+            transform: none;
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            padding: 0.8rem 1rem;
+            border-radius: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .menu-item:hover, .menu-item:focus-visible {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .menu-item.menu-task {
+            background: rgba(99, 102, 241, 0.16);
+        }
+
+        .menu-item[hidden] {
+            display: none;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: var(--border-subtle);
+            margin: 0.3rem 0.6rem;
         }
 
         .ripple {
@@ -587,8 +676,12 @@
 
         .tooltip-bubble {
             position: fixed;
-            top: 75px;
-            left: 1.2rem;
+            bottom: 6.2rem;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: max-content;
+            text-align: center;
             background: #6366F1;
             color: white;
             padding: 0.6rem 1rem;
@@ -605,13 +698,13 @@
         .tooltip-bubble::after {
             content: "";
             position: absolute;
-            top: -6px;
-            left: 24px;
+            bottom: -6px;
+            left: calc(50% - 6px);
             width: 12px;
             height: 12px;
             background: #6366F1;
             transform: rotate(45deg);
-            border-top-left-radius: 3px;
+            border-bottom-right-radius: 3px;
         }
 
         @keyframes bounceTooltip {
@@ -678,20 +771,20 @@
 
 <div class="top-bar">
     <div class="top-bar-pill">
-        <button id="fab-add" class="fab-btn" aria-label="Add new goal">
-            <svg class="plus-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <button id="fab-clear" class="fab-btn fab-clear" aria-label="Clear active goals">
+            <svg class="trash-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
-        
+
         <div class="top-date-container">
             <div id="top-month" class="top-month"></div>
             <div id="top-day" class="top-day"></div>
         </div>
-        
-        <button id="fab-clear" class="fab-btn fab-clear" aria-label="Clear active goals">
-            <svg class="trash-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <button id="fab-menu" class="fab-btn fab-menu" aria-label="Open menu" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+                <path d="M4 7H20M4 12H20M4 17H20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
             </svg>
         </button>
     </div>
@@ -711,6 +804,11 @@
 <div class="tab-container">
     <button class="tab-btn" data-tab="yearly">Yearly</button>
     <button class="tab-btn" data-tab="monthly">Monthly</button>
+    <button id="fab-add" class="fab-btn tab-fab" aria-label="Add new goal">
+        <svg class="plus-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+    </button>
     <button class="tab-btn" data-tab="weekly">Weekly</button>
     <button class="tab-btn active" data-tab="today">Today</button>
 </div>
@@ -744,6 +842,18 @@
     </div>
 </div>
 
+<div id="menu-layer" class="menu-layer">
+    <div class="menu-panel" role="menu">
+        <button id="menu-export" class="menu-item" role="menuitem">Export goal data</button>
+        <button id="menu-import" class="menu-item" role="menuitem">Import goal data</button>
+        <button id="menu-install" class="menu-item" role="menuitem" hidden>Install app</button>
+        <div class="menu-divider"></div>
+        <a class="menu-item menu-link menu-task" role="menuitem" href="https://bborngreat.github.io/schedule-janitor">Give Bright a task</a>
+        <a class="menu-item menu-link" role="menuitem" href="mailto:borngreatbright023@gmail.com?subject=Goal%20tracker%20feedback&amp;body=Hi%20Bright%2C%0A%0AType%20(feature%20idea%20%2F%20bug%20%2F%20complaint)%3A%20%0A%0AWhat%20I%27d%20like%20to%20tell%20you%3A%0A">Give feedback</a>
+    </div>
+</div>
+<input type="file" id="import-file" accept=".json,application/json" hidden>
+
 <div id="undo-toast" class="toast-container">
     <span id="toast-message" class="toast-msg">Task deleted</span>
     <button id="toast-undo-btn" class="toast-undo-btn">Undo</button>
@@ -776,6 +886,12 @@
     const sectionTitle = document.getElementById('section-title');
     const fabAdd = document.getElementById('fab-add');
     const fabClear = document.getElementById('fab-clear');
+    const fabMenu = document.getElementById('fab-menu');
+    const menuLayer = document.getElementById('menu-layer');
+    const menuExport = document.getElementById('menu-export');
+    const menuImport = document.getElementById('menu-import');
+    const importFile = document.getElementById('import-file');
+    let pendingImport = null;
 
     const inputModal = document.getElementById('input-modal');
     const modalCancel = document.getElementById('modal-cancel');
@@ -989,6 +1105,7 @@
 
     function showUndoToast(msg) {
         toastMessage.textContent = msg;
+        toastUndoBtn.style.display = '';
         undoToast.classList.add('active');
         
         if (toastTimeout) clearTimeout(toastTimeout);
@@ -1115,6 +1232,9 @@
         } else if (action === 'clearCategory') {
             confirmTitle.textContent = 'Clear All';
             confirmOk.textContent = 'Clear';
+        } else if (action === 'importData') {
+            confirmTitle.textContent = 'Import goal data';
+            confirmOk.textContent = 'Replace';
         }
         
         confirmModal.classList.add('active');
@@ -1124,6 +1244,7 @@
         confirmModal.classList.remove('active');
         confirmAction = null;
         confirmTargetId = null;
+        pendingImport = null;
     }
 
     function handleConfirmOk() {
@@ -1131,6 +1252,8 @@
             deleteTaskWithUndo(confirmTargetId);
         } else if (confirmAction === 'clearCategory') {
             clearCategoryTasks();
+        } else if (confirmAction === 'importData') {
+            applyImport();
         }
         closeConfirmModal();
     }
@@ -1270,6 +1393,24 @@
             showConfirmModal('clearCategory', null, 'Clear all goals in this tab?');
         });
 
+        fabMenu.addEventListener('click', (e) => {
+            createRipple(e);
+            if (menuLayer.classList.contains('active')) closeMenu(); else openMenu();
+        });
+        menuLayer.addEventListener('click', (e) => {
+            if (e.target === menuLayer) closeMenu();
+        });
+        menuExport.addEventListener('click', () => { closeMenu(); exportGoalData(); });
+        menuImport.addEventListener('click', () => { closeMenu(); importFile.click(); });
+        importFile.addEventListener('change', () => {
+            handleImportFile(importFile.files[0]);
+            importFile.value = '';
+        });
+        document.querySelectorAll('.menu-link').forEach(l => l.addEventListener('click', closeMenu));
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeMenu();
+        });
+
         modalCancel.addEventListener('click', closeModal);
         modalSubmit.addEventListener('click', addNewTask);
         inputModal.addEventListener('click', (e) => {
@@ -1286,8 +1427,130 @@
         });
     }
 
+    function openMenu() {
+        menuLayer.classList.add('active');
+        fabMenu.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu() {
+        menuLayer.classList.remove('active');
+        fabMenu.setAttribute('aria-expanded', 'false');
+    }
+
+    function showInfoToast(msg, ms = 3000) {
+        toastMessage.textContent = msg;
+        toastUndoBtn.style.display = 'none';
+        undoToast.classList.add('active');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            undoToast.classList.remove('active');
+        }, ms);
+    }
+
+    function goalCountLabel(n) {
+        return n + (n === 1 ? ' goal' : ' goals');
+    }
+
+    function exportGoalData() {
+        if (state.tasks.length === 0) {
+            showInfoToast('No goals to export yet');
+            return;
+        }
+        const payload = { app: 'goal-tracker', version: 1, exportedAt: new Date().toISOString(), tasks: state.tasks };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'goal-data-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showInfoToast('Exported ' + goalCountLabel(state.tasks.length));
+    }
+
+    function handleImportFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            let data;
+            try {
+                data = JSON.parse(reader.result);
+            } catch (err) {
+                showInfoToast("That file isn't valid JSON");
+                return;
+            }
+            const tasks = Array.isArray(data) ? data : (data && Array.isArray(data.tasks) ? data.tasks : null);
+            const valid = tasks && tasks.length > 0 && tasks.every(t =>
+                t && typeof t === 'object' && t.id !== undefined &&
+                typeof t.text === 'string' &&
+                ['yearly', 'monthly', 'weekly', 'today'].includes(t.category));
+            if (!valid) {
+                showInfoToast("This doesn't look like exported goal data");
+                return;
+            }
+            pendingImport = tasks;
+            if (state.tasks.length === 0) {
+                applyImport();
+            } else {
+                showConfirmModal('importData', null,
+                    'Replace your ' + goalCountLabel(state.tasks.length) + ' with the ' + goalCountLabel(tasks.length) + ' in this file? This cannot be undone.');
+            }
+        };
+        reader.onerror = () => showInfoToast("Couldn't read that file");
+        reader.readAsText(file);
+    }
+
+    function applyImport() {
+        if (!pendingImport) return;
+        state.tasks = pendingImport;
+        pendingImport = null;
+        state.tasks.sort((a, b) => a.category === b.category ? (a.sortOrder || 0) - (b.sortOrder || 0) : 0);
+        persistTasksToDB(state.tasks);
+        dismissFirstRun();
+        updateView();
+        showInfoToast('Imported ' + goalCountLabel(state.tasks.length));
+    }
+
     function escapeHtml(string) {
         return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    const menuInstall = document.getElementById('menu-install');
+    let deferredInstallPrompt = null;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (!isStandalone && isIOS) menuInstall.hidden = false;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        if (!isStandalone) menuInstall.hidden = false;
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        menuInstall.hidden = true;
+        showInfoToast('Northstar installed');
+    });
+
+    menuInstall.addEventListener('click', async () => {
+        closeMenu();
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            menuInstall.hidden = true;
+        } else if (isIOS) {
+            showInfoToast('Tap the Share button, then "Add to Home Screen"', 5000);
+        }
+    });
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.error('Service worker registration failed.', err));
+        });
     }
 </script>
 </body>
