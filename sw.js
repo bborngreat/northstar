@@ -1,5 +1,5 @@
 // Bump this version whenever you change the ASSETS list below.
-const CACHE = 'northstar-v3';
+const CACHE = 'northstar-v4';
 const ASSETS = [
   './',
   'index.html',
